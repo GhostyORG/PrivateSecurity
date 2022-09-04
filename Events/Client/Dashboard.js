@@ -1,7 +1,13 @@
-const { Client, ChannelType } = require("discord.js")
+const {
+    Client,
+    ChannelType
+} = require("discord.js")
 const DarkDashboard = require("dbd-dark-dashboard")
 const DBD = require("discord-dashboard")
 const WelcomeDB = require("../../Structures/Schemas/Welcome")
+const GeneralLogsDB = require("../../Structures/Schemas/LogsChannel")
+const LogsSwitch = require("../../Structures/Schemas/GeneralLogs")
+
 
 module.exports = {
     name: "ready",
@@ -11,6 +17,10 @@ module.exports = {
      */
 
     async execute(client) {
+
+        const {
+            user
+        } = client
 
         let Information = []
         let Moderation = []
@@ -52,9 +62,9 @@ module.exports = {
             },
             theme: DarkDashboard({
                 information: {
-                    createdBy: "iMidnight",
-                    websiteTitle: "iMidnight",
-                    websiteName: "iMidnight",
+                    createdBy: "Sparky",
+                    websiteTitle: "Sparky",
+                    websiteName: "Sparky",
                     websiteUrl: "https:/www.imidnight.ml/",
                     dashboardUrl: "http://localhost:3000/",
                     supporteMail: "support@imidnight.ml",
@@ -69,8 +79,8 @@ module.exports = {
 
                 index: {
                     card: {
-                        category: "iMidnight's Panel - The center of everything",
-                        title: `Welcome to the iMidnight discord where you can control the core features to the bot.`,
+                        category: "PrivateModeration Panel - The center of everything",
+                        title: `Welcome to the PrivateModeration discord where you can control the core features to the bot.`,
                         image: "https://i.imgur.com/axnP93g.png",
                         footer: "Footer",
                     },
@@ -90,22 +100,21 @@ module.exports = {
                     },
                 },
 
-                commands: [
+                commands: [{
+                        category: `Information`,
+                        subTitle: `All Information commands`,
+                        aliasesDisabled: false,
+                        list: Information
+
+                    },
                     {
-                    category: `Information`,
-                    subTitle: `All Information commands`,
-                    aliasesDisabled: false,
-                    list: Information
+                        category: `Moderation`,
+                        subTitle: `All Moderation commands`,
+                        aliasesDisabled: false,
+                        list: Moderation
 
-                }, 
-                {
-                    category: `Moderation`,
-                    subTitle: `All Moderation commands`,
-                    aliasesDisabled: false,
-                    list: Moderation
-
-                }, 
-            ]
+                    },
+                ]
             }),
             settings: [
 
@@ -115,43 +124,49 @@ module.exports = {
                     categoryId: "welcome",
                     categoryName: "Welcome System",
                     categoryDescription: "Setup the welcome channel",
-                    categoryOptionsList: [
-                        {
-                            optionId: "welch",
-                            optionName: "Welcome Channel",
-                            optionDescription: "Set or reset the server's welcome channel",
-                            optionType: DBD.formTypes.channelsSelect(false, channelType = [ChannelType.GuildText]),
-                            getActualSet: async ({ guild }) => {
-                                let data = await WelcomeDB.findOne({ Guild: guild.id }).catch(err => { })
-                                if(data) return data.Channel 
-                                else return null
-                            },
-                            setNew: async({ guild, newData }) => {
+                    categoryOptionsList: [{
+                        optionId: "welch",
+                        optionName: "Welcome Channel",
+                        optionDescription: "Set or reset the server's welcome channel",
+                        optionType: DBD.formTypes.channelsSelect(false, channelType = [ChannelType.GuildText]),
+                        getActualSet: async ({
+                            guild
+                        }) => {
+                            let data = await WelcomeDB.findOne({
+                                Guild: guild.id
+                            }).catch(err => {})
+                            if (data) return data.Channel
+                            else return null
+                        },
+                        setNew: async ({
+                            guild,
+                            newData
+                        }) => {
 
-                                let data = await WelcomeDB.findOne({ Guild: guild.id }).catch(err => { })
-                                if(!newData) newData = null
+                            let data = await WelcomeDB.findOne({
+                                Guild: guild.id
+                            }).catch(err => {})
+                            if (!newData) newData = null
 
-                                if(!data) {
-                                    data = new WelcomeDB({
-                                        Guild: guild.id,
-                                        Channel: newData
-                                    })
+                            if (!data) {
+                                data = new WelcomeDB({
+                                    Guild: guild.id,
+                                    Channel: newData
+                                })
 
-                                    await data.save()
-                                } else {
-                                    data.Channel = newData
-                                    await data.save()
-                                }
-
-                                return
-
+                                await data.save()
+                            } else {
+                                data.Channel = newData
+                                await data.save()
                             }
-                        }
-                    ]
-                }
 
-            ]
+                            return
+                        }
+                    }, ]
+                },
+            ],
         })
+
 
         Dashboard.init()
     }
